@@ -116,3 +116,8 @@ def new_post():
     return render_template('create_post.html', title='New Post',
                             form=form, legend='New Post')
 
+
+@app.route("/posts/<int:post_id>", methods=['GET'])
+def post(post_id):
+    post = Post.query.get_or_404(post_id)
+    return render_template('post.html', title=post.title, post=post)
