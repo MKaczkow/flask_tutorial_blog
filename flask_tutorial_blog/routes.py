@@ -3,7 +3,7 @@ import os
 
 from PIL import Image
 
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from flask_tutorial_blog import app, db, bcrypt
 from flask_tutorial_blog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from flask_tutorial_blog.models import User, Post
@@ -26,14 +26,13 @@ def about():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(user)
         db.session.commit()
-        flash('Your account has been created, you can now log in!', 'success')
+        flash('Your account has been created! You are now able to log in', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -117,7 +116,33 @@ def new_post():
                             form=form, legend='New Post')
 
 
-@app.route("/posts/<int:post_id>", methods=['GET'])
+@app.route("/posts/<int:post_id>", methods=['GET', 'POST'])
 def post(post_id):
     post = Post.query.get_or_404(post_id)
     return render_template('post.html', title=post.title, post=post)
+
+
+@app.route("/post/<int:post_id>/update", methods=['GET', 'POST'])
+@login_required
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.content = form.content.data
+        db.session.commit()
+        flash('Your post has been updated!', 'success')
+        return redirect(url_for('post', post_id=post.id))
+    elif request.method == 'GET':
+        form.title.data = post.title
+        form.content.data = post.content
+    return render_template('create_post.html', title='Update Post',
+                           form=form, legend='Update Post')
+
+
+@app.route("/post/<int:post_id>/delete", methods=['GET', 'POST'])
+@login_required
+def delete_post(post_id):
+    pass
