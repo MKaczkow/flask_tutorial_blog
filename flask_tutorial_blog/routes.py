@@ -3,7 +3,11 @@ import os
 
 from PIL import Image
 
+<<<<<<< HEAD
 from flask import abort, render_template, url_for, flash, redirect, request
+=======
+from flask import render_template, url_for, flash, redirect, request, abort
+>>>>>>> eca8787a7e039e37626dd835a27f13cd24ab4524
 from flask_tutorial_blog import app, db, bcrypt
 from flask_tutorial_blog.forms import RegistrationForm, LoginForm, UpdateAccountForm, PostForm
 from flask_tutorial_blog.models import User, Post
@@ -27,14 +31,13 @@ def about():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
-
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         db.session.add(user)
         db.session.commit()
-        flash('Your account has been created, you can now log in!', 'success')
+        flash('Your account has been created! You are now able to log in', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -118,7 +121,11 @@ def new_post():
                             form=form, legend='New Post')
 
 
+<<<<<<< HEAD
 @app.route("/posts/<int:post_id>")
+=======
+@app.route("/posts/<int:post_id>", methods=['GET', 'POST'])
+>>>>>>> eca8787a7e039e37626dd835a27f13cd24ab4524
 def post(post_id):
     post = Post.query.get_or_404(post_id)
     return render_template('post.html', title=post.title, post=post)
@@ -144,6 +151,7 @@ def update_post(post_id):
                            form=form, legend='Update Post')
 
 
+<<<<<<< HEAD
 @app.route("/post/<int:post_id>/delete", methods=['POST'])
 @login_required
 def delete_post(post_id):
@@ -164,3 +172,9 @@ def user_posts(username):
         .order_by(Post.data_posted.desc())\
         .paginate(page=page, per_page=5)
     return render_template('user_posts.html', user=user, posts=posts)
+=======
+@app.route("/post/<int:post_id>/delete", methods=['GET', 'POST'])
+@login_required
+def delete_post(post_id):
+    pass
+>>>>>>> eca8787a7e039e37626dd835a27f13cd24ab4524
