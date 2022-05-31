@@ -13,7 +13,8 @@ from flask_login import login_user, current_user, logout_user, login_required
 @app.route("/")
 @app.route("/home")
 def home():
-    posts = Post.query.all()
+    page = request.args.get('page', 1, type=int)
+    posts = Post.query.order_by(Post.data_posted.desc()).paginate(page=page, per_page=5)
     return render_template('home.html', posts=posts)
 
 
@@ -116,7 +117,11 @@ def new_post():
                             form=form, legend='New Post')
 
 
+<<<<<<< HEAD
+@app.route("/posts/<int:post_id>")
+=======
 @app.route("/posts/<int:post_id>", methods=['GET', 'POST'])
+>>>>>>> eca8787a7e039e37626dd835a27f13cd24ab4524
 def post(post_id):
     post = Post.query.get_or_404(post_id)
     return render_template('post.html', title=post.title, post=post)
@@ -142,7 +147,33 @@ def update_post(post_id):
                            form=form, legend='Update Post')
 
 
+<<<<<<< HEAD
+@app.route("/post/<int:post_id>/delete", methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author != current_user:
+        abort(403)
+    db.session.delete(post)
+    db.session.commit()
+    flash('Your post has been deleted!', 'success')
+    return redirect(url_for('home'))
+
+
+@app.route("/user/<string:username>")
+def user_posts(username):
+    page = request.args.get('page', 1, type=int)
+    user = User.query.filter_by(username=username).first_or_404()
+    posts = Post.query.filter_by(author=user)\
+        .order_by(Post.data_posted.desc())\
+        .paginate(page=page, per_page=5)
+    return render_template('user_posts.html', user=user, posts=posts)
+=======
 @app.route("/post/<int:post_id>/delete", methods=['GET', 'POST'])
 @login_required
 def delete_post(post_id):
     pass
+<<<<<<< HEAD
+=======
+>>>>>>> eca8787a7e039e37626dd835a27f13cd24ab4524
+>>>>>>> 94ce2c703a608fdc6dcdda088737dd0f50caa270
