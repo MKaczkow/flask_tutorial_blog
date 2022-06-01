@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request
+from flask_tutorial_blog.models import Post 
 
 
 main = Blueprint('main', __name__)
@@ -14,4 +15,4 @@ def home():
 
 @main.route("/about")
 def about():
-    return render_template('about.html')
+    return render_template('about.html', title='About')
