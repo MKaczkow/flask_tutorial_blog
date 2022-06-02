@@ -1,8 +1,6 @@
-import bcrypt
-
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
-from flask_tutorial_blog import db
+from flask_tutorial_blog import db, bcrypt
 from flask_tutorial_blog.models import Post, User
 from flask_tutorial_blog.users.forms import LoginForm, RegistrationForm, UpdateAccountForm
 from flask_tutorial_blog.users.utils import save_picture
@@ -14,7 +12,7 @@ users = Blueprint('users', __name__)
 @users.route("/register", methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     form = RegistrationForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -22,14 +20,14 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Your account has been created! You are now able to log in', 'success')
-        return redirect(url_for('login'))
+        return redirect(url_for('users.login'))
     return render_template('register.html', title='Register', form=form)
 
 
 @users.route("/login", methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
 
     form = LoginForm()
     if form.validate_on_submit():
@@ -37,7 +35,7 @@ def login():
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get('next')
-            return redirect(next_page) if next_page else redirect(url_for('home'))
+            return redirect(next_page) if next_page else redirect(url_for('main.home'))
         else:
             flash('Login unsuccessful. Please check username and password', 'danger')
     return render_template('login.html', title='Login', form=form)
@@ -46,7 +44,7 @@ def login():
 @users.route("/logout", methods=['GET'])
 def logout():
     logout_user()
-    return redirect(url_for('home'))
+    return redirect(url_for('main.home'))
 
 
 @users.route("/account", methods=['GET', 'POST'])
@@ -81,6 +79,6 @@ def user_posts(username):
     page = request.args.get('page', 1, type=int)
     user = User.query.filter_by(username=username).first_or_404()
     posts = Post.query.filter_by(author=user)\
-        .order_by(Post.data_posted.desc())\
+        .order_by(Post.date_posted.desc())\
         .paginate(page=page, per_page=5)
     return render_template('user_posts.html', user=user, posts=posts)
