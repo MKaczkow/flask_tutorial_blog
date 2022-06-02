@@ -1,14 +1,15 @@
-FROM python:3.10-alpine as base
+FROM python:3.10-alpine
 
-COPY requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt
+# fixes cffi installation error, based on:
+# https://stackoverflow.com/questions/71372066/docker-fails-to-install-cffi-with-python3-9-alpine-in-dockerfile
+# https://github.com/gliderlabs/docker-alpine/issues/296
+RUN apk add --update --no-cache --virtual .tmp-build-deps \
+    gcc libc-dev linux-headers postgresql-dev \
+    && apk add libffi-dev
+COPY . /app
+WORKDIR /app
+RUN pip install -r requirements.txt
 
-################################################
-
-FROM base as final 
-
-COPY ./flask_tutorial_blog /app
-COPY run.py /app
 EXPOSE 8000
-
-ENTRYPOINT [ "python", "app/run.py" ]
+ENTRYPOINT ["python"]
+CMD ["run.py"]
